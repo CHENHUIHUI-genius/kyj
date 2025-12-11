@@ -71,32 +71,6 @@ public class InventoryManager : Singleton<InventoryManager>                     
     //}
 
 
-
-    /// <summary>逻辑：使用物品后，从物品栏移除该物品，并更新UI</summary>
-    /// <param name="itemName">被使用的物品名称（枚举）</param>
-    //private void OnItemUsedEvent(ItemName itemName)
-    //{
-    //    // 获取物品在列表中的索引
-    //    var index = GetItemIndex(itemName);
-    //    if (index == -1) return; // 避免无效索引
-
-    //    // 移除该索引的物品（索引合法时才会执行，GetItemIndex非法返回-1，RemoveAt(-1)会报错，但实际使用时itemName必在列表中）
-    //    itemList.RemoveAt(index);
-    //    // 通知UI清除被移除的槽位
-    //    EventHandler.CallUpdateUIEvent(null, index);
-
-    //    //// 重新更新后续槽位（因为列表索引已变化）
-    //    //for (int i = index; i < itemList.Count; i++)
-    //    //{
-    //    //    ItemDetails item = itemData.GetItemDetails(itemList[i]);
-    //    //    EventHandler.CallUpdateUIEvent(item, i);
-    //    //}
-
-    //    // 物品栏为空 → 通知UI清空显示
-    //    if (itemList.Count == 0)
-    //        EventHandler.CallUpdateUIEvent(null, -1);
-    //}
-
     // 使用物品时只清空当前槽位，不移动其他物品
     private void OnItemUsedEvent(ItemName itemName)
     {
@@ -112,25 +86,6 @@ public class InventoryManager : Singleton<InventoryManager>                     
     }
 
 
-    //// 找到AddItem方法，确保UI更新逻辑正确
-    //public void AddItem(ItemName itemName)
-    //{
-    //    // 避免重复添加
-    //    if (itemList.Contains(itemName))
-    //        return;
-
-    //    // 限制最大物品数量为5（与物品栏数量一致）
-    //    if (itemList.Count >= 5)
-    //    {
-    //        Debug.LogWarning("物品栏已满！");
-    //        return;
-    //    }
-
-    //    itemList.Add(itemName);
-    //    // 通知UI更新：传入物品详情和对应的槽位索引（最后一个）
-    //    int slotIndex = itemList.Count - 1;
-    //    EventHandler.CallUpdateUIEvent(itemData.GetItemDetails(itemName), slotIndex);
-    //}
     public void AddItem(ItemName itemName)
     {
         // 避免重复添加（如果需要可堆叠可删除此判断）
@@ -157,20 +112,21 @@ public class InventoryManager : Singleton<InventoryManager>                     
     }
 
 
-/// <summary>私有工具方法：根据物品名称查找其在列表中的索引  作用：封装索引查询逻辑，避免重复代码</summary>
-/// <param name="itemName">要查找的物品名称（枚举）</param>
-/// <returns>物品索引（存在则返回对应下标，不存在返回-1）</returns>
-//private int GetItemIndex(ItemName itemName)
-//    {
-//        // 遍历物品列表，匹配物品名称
-//        for (int i = 0; i < itemList.Count; i++)
-//        {
-//            if (itemList[i] == itemName)
-//                return i;
-//        }
-//        // 未找到返回-1（异常保护）
-//        return -1;
-//    }
+
+    /// <summary>私有工具方法：根据物品名称查找其在列表中的索引  作用：封装索引查询逻辑，避免重复代码</summary>
+    /// <param name="itemName">要查找的物品名称（枚举）</param>
+    /// <returns>物品索引（存在则返回对应下标，不存在返回-1）</returns>
+    //private int GetItemIndex(ItemName itemName)
+    //    {
+    //        // 遍历物品列表，匹配物品名称
+    //        for (int i = 0; i < itemList.Count; i++)
+    //        {
+    //            if (itemList[i] == itemName)
+    //                return i;
+    //        }
+    //        // 未找到返回-1（异常保护）
+    //        return -1;
+    //    }
 
     ///// <summary>
     ///// 实现ISavable接口：生成物品栏存档数据

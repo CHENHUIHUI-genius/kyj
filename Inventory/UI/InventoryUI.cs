@@ -1,55 +1,4 @@
-//// 物品栏左右键
-//using UnityEngine;
-//using UnityEngine.UI;
-
-//public class InventoryUI : MonoBehaviour
-//{
-//    public Button leftButton, rightButton;
-
-//    public SlotUI slotUI;
-
-//    public int currentIndex;        //显示UI当前的物品序号
-
-//    private void OnEnable()
-//    {
-//        EventHandler.UpdateUIEvent += OnUpdateUIEvent;
-//    }
-
-//    private void OnDisable()
-//    {
-//        EventHandler.UpdateUIEvent -= OnUpdateUIEvent;
-//    }
-
-//    // 在拾取物品的时候会update一次
-//    private void OnUpdateUIEvent(ItemDetails itemDetails, int index)
-//    {
-//        if (itemDetails == null)
-//        {
-//            slotUI.SetEmpty();
-//            currentIndex = -1;
-//            leftButton.interactable = false;
-//            rightButton.interactable = false;
-//        }
-//        else
-//        {
-//            currentIndex = index;
-//            slotUI.SetItem(itemDetails);
-
-//            //        // 非空的时候也要修改一下左右按钮的状况
-//            //        if (index > 0)
-//            //        {
-//            //            leftButton.interactable = true;
-//            //        }
-//            //        if (index == -1)
-//            //        {
-//            //            leftButton.interactable = false;
-//            //            rightButton.interactable = false;
-//            //        }
-//        }
-//    }
-
-
-//}
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryUI : MonoBehaviour
@@ -57,14 +6,9 @@ public class InventoryUI : MonoBehaviour
     public SlotUI[] slots;          // 5 个槽
     private int selectedIndex = -1;
 
-    //private void Start()
-    //{
-    //    foreach (var slot in slots)
-    //    {
-    //        if (slot != null && slot.selectedBG != null)
-    //            slot.selectedBG.gameObject.SetActive(false);
-    //    }
-    //}
+    // 物品预制体字典（在Inspector赋值：Key=物品名，Value=对应预制体）
+    public Dictionary<ItemName, GameObject> itemPrefabDict;
+
 
     private void Start()
     {
@@ -89,20 +33,6 @@ public class InventoryUI : MonoBehaviour
         EventHandler.UpdateUIEvent -= OnUpdateUIEvent;
         EventHandler.SlotClickedEvent -= OnSlotClickedEvent;
     }
-
-    // UpdateUIEvent: 物品更新时（拾取）                                                                 old
-    //private void OnUpdateUIEvent(ItemDetails item, int index)
-    //{
-    //    if (item == null)
-    //    {
-    //        // 清空对应的槽
-    //        slots[index].SetEmpty();
-    //    }
-    //    else
-    //    {
-    //        slots[index].SetItem(item);
-    //    }
-    //}
 
     private void OnUpdateUIEvent(ItemDetails item, int index)                                       //new
     {
@@ -140,21 +70,7 @@ public class InventoryUI : MonoBehaviour
         //FindObjectOfType<SlotUI>()?.tooltip?.gameObject.SetActive(false);
         var slot = Object.FindFirstObjectByType<SlotUI>();
         slot?.tooltip?.gameObject.SetActive(false);
-        //// 校验索引有效性
-        //if (index < 0 || index >= slots.Length)
-        //    return;
 
-        //// 取消上一个选中槽位的状态
-        //if (selectedIndex != -1)
-        //{
-        //    slots[selectedIndex].isSelected = false;
-        //    slots[selectedIndex].selectedBG.gameObject.SetActive(false);
-        //}
-
-        //// 设置新选中的槽位
-        //selectedIndex = index;
-        //slots[index].isSelected = true;
-        //slots[index].selectedBG.gameObject.SetActive(true);
         // 如果点到已选中槽 → 取消选中
         if (index < 0 || index >= slots.Length)
             return;
@@ -177,12 +93,6 @@ public class InventoryUI : MonoBehaviour
             EventHandler.CallItemSelectedEvent(null, false);
         }
 
-        //// 新选中
-        //selectedIndex = index;
-        //slots[index].selectedBG.gameObject.SetActive(true);
-        //slots[index].isSelected = true; // 同步状态
-        //// 通知选中当前物品
-        //EventHandler.CallItemSelectedEvent(slots[index].currentItem, true);
         // 选中新槽位（如果槽位有物品）
         if (slots[index].currentItem != null)
         {
@@ -190,6 +100,8 @@ public class InventoryUI : MonoBehaviour
             slots[index].selectedBG.gameObject.SetActive(true);
             slots[index].isSelected = true;
             EventHandler.CallItemSelectedEvent(slots[index].currentItem, true);
+
         }
     }
+
 }

@@ -110,6 +110,12 @@ public static class EventHandler
 
     #endregion
 
+    #region 窗户相关事件
+    // 在适当位置添加
+    public static event Action PuzzleCompletedEvent; // 新增
+    public static void CallPuzzleCompletedEvent() => PuzzleCompletedEvent?.Invoke(); // 新增
+    #endregion
+
     //#region 对话相关事件
     ///// <summary>
     ///// 显示对话事件

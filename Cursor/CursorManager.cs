@@ -4,15 +4,28 @@ using static UnityEditor.Progress;
 
 public class CursorManager : MonoBehaviour
 {
+    public static CursorManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     public RectTransform back;                      // delete
     private Vector3 mouseWorldPos => Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
-    // Êó±êÎ»ÖÃ×ª»»³ÉÊÀ½ç×ø±ê
+    // ï¿½ï¿½ï¿½Î»ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private ItemName currentItem;
 
     private bool canClick;
     private bool holdItem;
 
+    public ItemName CurrentItem => currentItem; // ï¿½ï¿½ï¿½ï¿½
     private void OnEnable()
     {
         EventHandler.ItemSelectedEvent += OnItemSelectedEvent;
@@ -36,26 +49,26 @@ public class CursorManager : MonoBehaviour
 
     private void Update()
     {
-        // 1. ÊµÊ±¸üÐÂ"ÊÇ·ñ¿Éµã»÷"×´Ì¬£ºÍ¨¹ý¼ì²âÊó±êÎ»ÖÃÊÇ·ñ´æÔÚÄ¿±ê¶ÔÏó£¨ÓÉObjectAtMousePosition()ÅÐ¶Ï£©
+        // 1. ÊµÊ±ï¿½ï¿½ï¿½ï¿½"ï¿½Ç·ï¿½Éµï¿½ï¿½"×´Ì¬ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ObjectAtMousePosition()ï¿½Ð¶Ï£ï¿½
         canClick = ObjectAtMousePosition();
 
-        //// 2. Êó±êÖ¸Õë£¨hand£©Î»ÖÃÍ¬²½Âß¼­ Ìõ¼þ£ºÈç¹ûÊó±êÖ¸Õë¶ÔÏó£¨hand£©´¦ÓÚ¼¤»î×´Ì¬£¨ÔÚHierarchyÖÐÏÔÊ¾£©
+        //// 2. ï¿½ï¿½ï¿½Ö¸ï¿½ë£¨handï¿½ï¿½Î»ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ß¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½handï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½Hierarchyï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½
         ////if (hand.gameObject.activeInHierarchy)                                         // delete
-        ////    hand.position = Input.mousePosition;                                       // delete    ÓÃÓÚÊµÏÖÊÖºÍÊó±ê¸úËæ£¬±¾Éè¼ÆÎªÃÉ°æ²»ÐèÒª
+        ////    hand.position = Input.mousePosition;                                       // delete    ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ£¬ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½É°æ²»ï¿½ï¿½Òª
 
-        //// 3. UI½»»¥¼ì²â£ºÈç¹ûµ±Ç°Êó±êÕýÔÚÓëUI½»»¥£¨Èçµã»÷°´Å¥¡¢ÊäÈë¿ò£©
-        //// Ö±½Ó·µ»Ø£¬ÖÕÖ¹ºóÐøËùÓÐµã»÷Âß¼­£¨±ÜÃâUI½»»¥Óë³¡¾°ÎïÌåµã»÷³åÍ»£©
+        //// 3. UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â£ºï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        //// Ö±ï¿½Ó·ï¿½ï¿½Ø£ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½ï¿½ë³¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½
         //if (InteractWithUI())
         //    return;
 
 
-        // 4. ºÏ·¨µã»÷ÅÐ¶ÏÓëÖ´ÐÐ£ºÂú×ãÁ½¸öÌõ¼þ²Å´¥·¢µã»÷ÐÐÎª
-        // Ìõ¼þ1£ºcanClickÎªtrue ¡ú Êó±êÎ»ÖÃÓÐ¿Éµã»÷µÄ³¡¾°¶ÔÏó
-        // Ìõ¼þ2£ºInput.GetMouseButtonDown(0) ¡ú Íæ¼Ò°´ÏÂÊó±ê×ó¼ü£¨0=×ó¼ü£¬1=ÓÒ¼ü£¬2=ÖÐ¼ü£©
+        // 4. ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½Ö´ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª
+        // ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½canClickÎªtrue ï¿½ï¿½ ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ð¿Éµï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½Input.GetMouseButtonDown(0) ï¿½ï¿½ ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0=ï¿½ï¿½ï¿½ï¿½ï¿½1=ï¿½Ò¼ï¿½ï¿½ï¿½2=ï¿½Ð¼ï¿½ï¿½ï¿½
         if (canClick && Input.GetMouseButtonDown(0))
         {
-            // Ö´ÐÐµã»÷¶¯×÷£º½«Êó±êÎ»ÖÃµÄ¿Éµã»÷¶ÔÏó£¨GameObject£©´«Èëµã»÷´¦Àí·½·¨
-            // ClickAction()£º×Ô¶¨Òåµã»÷Âß¼­·½·¨£¨ÍÆ²â¹¦ÄÜ£º¸ù¾Ýµã»÷µÄ¶ÔÏóÖ´ÐÐ¶ÔÓ¦²Ù×÷£¬Èç"teleport"£¬"interactive"µÈ£©
+            // Ö´ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ÃµÄ¿Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½GameObjectï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            // ClickAction()ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ²â¹¦ï¿½Ü£ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½Ö´ï¿½Ð¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"teleport"ï¿½ï¿½"interactive"ï¿½È£ï¿½
             ClickAction(ObjectAtMousePosition().gameObject);
         }
     }
@@ -83,7 +96,7 @@ public class CursorManager : MonoBehaviour
                 var item = clickObject.GetComponent<Item>();
                 item?.ItemClicked();
                 break;
-            // ¸ù¾ÝÍæ¼Òµ±Ç°ÊÇ·ñ ¡°³ÖÓÐÎïÆ·¡±£¬µ÷ÓÃ»¥¶¯¶ÔÏó£¨ÈçÃÅ¡¢»ú¹Ø£©µÄ¶ÔÓ¦·½·¨£¬°Ñ ¡°Íæ¼Ò²Ù×÷¡± ºÍ ¡°»¥¶¯Âß¼­¡± ´®ÁªÆðÀ´
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Ç°ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¡ï¿½ï¿½ï¿½ï¿½Ø£ï¿½ï¿½Ä¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             case "Interactive":
                 var interactive = clickObject.GetComponent<Interactive>();
                 if (currentItem != ItemName.None)
@@ -91,6 +104,7 @@ public class CursorManager : MonoBehaviour
                 else
                     interactive?.EmptyClicked();
                 break;
+
         }
     }
 
@@ -99,14 +113,14 @@ public class CursorManager : MonoBehaviour
         return Physics2D.OverlapPoint(mouseWorldPos);
     }
 
-    ///// ¼ì²âµ±Ç°Êó±ê/´¥ÃþÊÇ·ñÕýÓëUIÔªËØ½»»¥µÄ¹¤¾ß·½·¨
-    ///// ºËÐÄ×÷ÓÃ£ºÅÐ¶ÏÊäÈëÊÂ¼þ£¨Èçµã»÷¡¢ÍÏ×§£©ÊÇ·ñÂäÔÚUIÉÏ£¬±ÜÃâUI½»»¥Óë³¡¾°ÎïÌå½»»¥³åÍ»£¨±ÈÈçµã»÷°´Å¥Ê±Í¬Ê±´¥·¢³¡¾°ÎïÌåµÄµã»÷£©
+    ///// ï¿½ï¿½âµ±Ç°ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½UIÔªï¿½Ø½ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ß·ï¿½ï¿½ï¿½
+    ///// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×§ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½ï¿½ë³¡ï¿½ï¿½ï¿½ï¿½ï¿½å½»ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¥Ê±Í¬Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½
     //private bool InteractWithUI()
     //{
-    //    // Ìõ¼þ1£ºEventSystem.current != null ¡ú È·±£³¡¾°ÖÐ´æÔÚEventSystem£¨UI½»»¥µÄºËÐÄ¹ÜÀíÆ÷£©
-    //    // ³¡¾°ÖÐÃ»ÓÐEventSystemÊ±£¬UIÎÞ·¨½»»¥£¬´ËÊ±Ö±½Ó·µ»Øfalse£¨±ÜÃâ¿ÕÒýÓÃÒì³££©
-    //    // Ìõ¼þ2£ºEventSystem.current.IsPointerOverGameObject() ¡ú ¼ì²âµ±Ç°Êó±êÖ¸Õë£¨»ò´¥Ãþµã£©ÊÇ·ñÐü¸¡/µã»÷ÔÚUIÔªËØÉÏ
-    //    // IsPointerOverGameObject()£ºEventSystemÄÚÖÃ·½·¨£¬·µ»Øtrue±íÊ¾Ö¸ÕëÔÚUIÉÏ£¨Èç°´Å¥¡¢Í¼Æ¬¡¢ÊäÈë¿òµÈ´øCollider/GraphicRaycasterµÄUI£©
+    //    // ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½EventSystem.current != null ï¿½ï¿½ È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½EventSystemï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½ï¿½Äºï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½EventSystemÊ±ï¿½ï¿½UIï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ö±ï¿½Ó·ï¿½ï¿½ï¿½falseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½
+    //    // ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½EventSystem.current.IsPointerOverGameObject() ï¿½ï¿½ ï¿½ï¿½âµ±Ç°ï¿½ï¿½ï¿½Ö¸ï¿½ë£¨ï¿½ï¿½ï¿½ï¿½ï¿½ã£©ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½UIÔªï¿½ï¿½ï¿½ï¿½
+    //    // IsPointerOverGameObject()ï¿½ï¿½EventSystemï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½trueï¿½ï¿½Ê¾Ö¸ï¿½ï¿½ï¿½ï¿½UIï¿½Ï£ï¿½ï¿½ç°´Å¥ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½Collider/GraphicRaycasterï¿½ï¿½UIï¿½ï¿½
     //    if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
     //        return true;
     //    else

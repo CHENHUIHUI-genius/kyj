@@ -18,4 +18,5 @@ public class ItemDetails
 {
     public ItemName itemName;
     public Sprite itemSprite;
+    public int targetPositionIndex; // 新增：对应目标位置索引（0~3）
 }
