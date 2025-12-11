@@ -19,7 +19,7 @@ public class Interactive : MonoBehaviour
     /// 外部调用入口（如玩家点击交互对象+使用物品时触发）
     /// </summary>
     /// <param name="itemName">玩家当前使用的物品名称（枚举）</param>
-    public void CheckItem(ItemName itemName)
+    public virtual void CheckItem(ItemName itemName)
     {
 
         // 双重条件校验：1. 玩家使用的物品 == 交互所需物品（物品匹配）；2. 交互未完成（isDone=false，避免重复交互）

@@ -72,6 +72,23 @@ public class CursorManager : MonoBehaviour
             ClickAction(ObjectAtMousePosition().gameObject);
         }
     }
+    //private void Update()
+    //{
+    //    Collider2D hit = ObjectAtMousePosition();
+    //    canClick = hit != null;
+
+    //    if (canClick)
+    //    {
+    //        Debug.Log($"鼠标位置检测到: {hit.gameObject.name}, Tag: {hit.gameObject.tag}");
+    //    }
+
+    //    if (canClick && Input.GetMouseButtonDown(0))
+    //    {
+    //        GameObject clickedObj = hit.gameObject;
+    //        Debug.Log($"点击对象: {clickedObj.name}");
+    //        ClickAction(clickedObj);
+    //    }
+    //}
 
     private void OnItemSelectedEvent(ItemDetails itemDetails, bool isSelected)
     {
@@ -108,10 +125,30 @@ public class CursorManager : MonoBehaviour
         }
     }
 
+    //private Collider2D ObjectAtMousePosition()
+    //{
+    //    return Physics2D.OverlapPoint(mouseWorldPos);
+    //}
     private Collider2D ObjectAtMousePosition()
     {
-        return Physics2D.OverlapPoint(mouseWorldPos);
+        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
+
+        // 获取鼠标位置的所有碰撞体
+        Collider2D[] hits = Physics2D.OverlapPointAll(mouseWorldPos);
+
+        // 优先返回有"Interactive"标签的对象
+        foreach (Collider2D hit in hits)
+        {
+            if (hit.gameObject.CompareTag("Interactive"))
+            {
+                return hit;
+            }
+        }
+
+        // 如果没有Interactive对象，返回第一个碰撞体（如果有的话）
+        return hits.Length > 0 ? hits[0] : null;
     }
+
 
     ///// ��⵱ǰ���/�����Ƿ�����UIԪ�ؽ����Ĺ��߷���
     ///// �������ã��ж������¼�����������ק���Ƿ�����UI�ϣ�����UI�����볡�����彻����ͻ����������ťʱͬʱ������������ĵ����
