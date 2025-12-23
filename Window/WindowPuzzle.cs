@@ -92,7 +92,7 @@ public class WindowPuzzle : Interactive
         Debug.Log("重置场景中所有物品到初始状态");
 
         // 查找场景中所有的Item对象并销毁（除了窗户区域的物品）
-        Item[] allItems = FindObjectsOfType<Item>();
+        Item[] allItems = FindObjectsByType<Item>(FindObjectsSortMode.None);
         foreach (Item item in allItems)
         {
             if (item != null && item.gameObject != null)
@@ -103,7 +103,7 @@ public class WindowPuzzle : Interactive
         }
 
         // 查找场景中所有的Box对象并重置状态
-        Box[] allBoxes = FindObjectsOfType<Box>();
+        Box[] allBoxes = FindObjectsByType<Box>(FindObjectsSortMode.None);
         foreach (Box box in allBoxes)
         {
             if (box != null)
