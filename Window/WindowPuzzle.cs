@@ -1,156 +1,365 @@
-// WindowPuzzle.cs
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WindowPuzzle : Interactive
 {
-    public Transform[] targetPositions; // 4¸öÄ¿±êÎ»ÖÃ£¨ÔÚInspector¸³Öµ£©
-    private Draggable[] placedItems = new Draggable[4]; // ÒÑÕıÈ··ÅÖÃµÄÎïÆ·
-    private int completedCount = 0; // ÒÑÍê³ÉµÄÆ´Í¼ÊıÁ¿
+    public Transform[] targetPositions;
+    private Draggable[] placedItems = new Draggable[4];
+    private int completedCount = 0;
+    private System.Collections.Generic.List<Draggable> windowItems = new System.Collections.Generic.List<Draggable>(); // çª—æˆ·å†…çš„æ‰€æœ‰ç‰©å“
 
     public ItemDataList_SO itemData;
-    public Sprite blackWindowSprite; // ÔÚInspectorÖĞ¸³ÖµºÚÉ«´°»§Í¼Æ¬
-    private enum WindowState { Normal, PuzzleCompleted, Black, ShadowShown }
+    public Sprite blackWindowSprite;
+
+    // çŠ¶æ€æšä¸¾
+    private enum WindowState { Normal, PuzzleCompleted, Black, ShadowShown, PostDialogue, Shadow1, Shadow2, Item }
     private WindowState currentState = WindowState.Normal;
 
-    private void Start()
+    // Shadowç›¸å…³
+    private GameObject shadowObject;
+    private ShadowInteractive shadowInteractive;
+    private Vector3 shadowOriginalPosition;
+
+    // ä¿å­˜åŸå§‹çª—æˆ·å›¾ç‰‡
+    private Sprite originalWindowSprite;
+
+    private void Awake()
     {
-        // ³õÊ¼»¯Ä¿±êÎ»ÖÃ£¨ÓëÎïÆ·µÄtargetIndex¶ÔÓ¦£©
+        shadowObject = transform.Find("Shadow").gameObject;
+        shadowInteractive = shadowObject.GetComponent<ShadowInteractive>();
+        shadowOriginalPosition = shadowObject.transform.position;
+
+        // ä¿å­˜åŸå§‹çª—æˆ·å›¾ç‰‡
+        SpriteRenderer windowRenderer = GetComponent<SpriteRenderer>();
+        if (windowRenderer != null)
+        {
+            originalWindowSprite = windowRenderer.sprite;
+        }
+    }
+
+    private void OnEnable()
+    {
+        EventHandler.AfterSceneLoadedEvent += OnAfterSceneLoadedEvent;
+        EventHandler.DialogueFinishedEvent += OnDialogueFinished;
+        EventHandler.StartNewGameEvent += OnStartNewGameEvent;
+    }
+
+    private void OnDisable()
+    {
+        EventHandler.AfterSceneLoadedEvent -= OnAfterSceneLoadedEvent;
+        EventHandler.DialogueFinishedEvent -= OnDialogueFinished;
+        EventHandler.StartNewGameEvent -= OnStartNewGameEvent;
+    }
+
+    // æ–°æ¸¸æˆå¼€å§‹æ—¶é‡ç½®çª—æˆ·çŠ¶æ€å¹¶ç”Ÿæˆåˆå§‹ç‰©å“
+    private void OnStartNewGameEvent()
+    {
+        Debug.Log("çª—æˆ·è°œé¢˜ - æ–°æ¸¸æˆå¼€å§‹ï¼Œé‡ç½®çŠ¶æ€å¹¶ç”Ÿæˆåˆå§‹ç‰©å“");
+        // é‡ç½®æ‰€æœ‰çŠ¶æ€
+        currentState = WindowState.Normal;
+        completedCount = 0;
+        shadowInteractive.dialogueStarted = false;
+
+        // æ¸…é™¤æ‰€æœ‰çª—æˆ·ç‰©å“
+        foreach (var item in windowItems)
+        {
+            if (item != null)
+            {
+                Destroy(item.gameObject);
+            }
+        }
+        windowItems.Clear();
+
+        // é‡ç½®å·²æ”¾ç½®ç‰©å“æ•°ç»„
+        for (int i = 0; i < placedItems.Length; i++)
+        {
+            placedItems[i] = null;
+        }
+
+        // ç”Ÿæˆåˆå§‹ç‰©å“ï¼ˆpaper1, paper2, paper3, paper4ï¼‰
+        SpawnInitialItems();
+
+        // é‡ç½®åœºæ™¯ä¸­æ‰€æœ‰å…¶ä»–ç‰©å“
+        ResetAllSceneItems();
+
+        // æ¢å¤è§†è§‰çŠ¶æ€
+        RestoreVisualState();
+    }
+
+    // é‡ç½®åœºæ™¯ä¸­æ‰€æœ‰å…¶ä»–ç‰©å“åˆ°åˆå§‹çŠ¶æ€
+    private void ResetAllSceneItems()
+    {
+        Debug.Log("é‡ç½®åœºæ™¯ä¸­æ‰€æœ‰ç‰©å“åˆ°åˆå§‹çŠ¶æ€");
+
+        // æŸ¥æ‰¾åœºæ™¯ä¸­æ‰€æœ‰çš„Itemå¯¹è±¡å¹¶é”€æ¯ï¼ˆé™¤äº†çª—æˆ·åŒºåŸŸçš„ç‰©å“ï¼‰
+        Item[] allItems = FindObjectsOfType<Item>();
+        foreach (Item item in allItems)
+        {
+            if (item != null && item.gameObject != null)
+            {
+                Destroy(item.gameObject);
+                Debug.Log($"é”€æ¯ç°æœ‰ç‰©å“: {item.itemName}");
+            }
+        }
+
+        // æŸ¥æ‰¾åœºæ™¯ä¸­æ‰€æœ‰çš„Boxå¯¹è±¡å¹¶é‡ç½®çŠ¶æ€
+        Box[] allBoxes = FindObjectsOfType<Box>();
+        foreach (Box box in allBoxes)
+        {
+            if (box != null)
+            {
+                // é‡ç½®BoxçŠ¶æ€ï¼ˆå¦‚æœBoxæœ‰é‡ç½®æ–¹æ³•ï¼‰
+                // box.ResetToInitialState(); // å¦‚æœä½ æ·»åŠ äº†è¿™ä¸ªæ–¹æ³•
+                Debug.Log($"é‡ç½®Box: {box.gameObject.name}");
+            }
+        }
+
+        // å¯ä»¥åœ¨è¿™é‡Œæ·»åŠ å…¶ä»–éœ€è¦é‡ç½®çš„å¯¹è±¡ç±»å‹
+        // ResetOtherInteractiveObjects();
+    }
+
+    // ç”Ÿæˆæ–°æ¸¸æˆå¼€å§‹æ—¶çš„åˆå§‹ç‰©å“
+    private void SpawnInitialItems()
+    {
+        Debug.Log("ç”Ÿæˆæ–°æ¸¸æˆåˆå§‹ç‰©å“");
+
+        // ç”Ÿæˆ4ä¸ªåˆå§‹paperç‰©å“ - è®¾ç½®å›ºå®šä½ç½®è€Œä¸æ˜¯éšæœº
+        SpawnItemAtPosition(ItemName.paper1, new Vector2(-6f, 2f));
+        SpawnItemAtPosition(ItemName.paper2, new Vector2(-2f, -3f));
+        SpawnItemAtPosition(ItemName.paper3, new Vector2(3f, 2f));
+        SpawnItemAtPosition(ItemName.paper4, new Vector2(7f, -1f));
+
+        // å¯ä»¥åœ¨è¿™é‡Œæ·»åŠ å…¶ä»–éœ€è¦é‡ç½®çš„åœºæ™¯ç‰©å“
+        // ä¾‹å¦‚ï¼šResetOtherSceneItems();
+    }
+
+    // åœ¨æŒ‡å®šä½ç½®ç”Ÿæˆç‰©å“
+    private void SpawnItemAtPosition(ItemName itemName, Vector2 position)
+    {
+        // è·å–ç‰©å“é¢„åˆ¶ä½“
+        GameObject itemPrefab = ItemPrefabDict.Instance.GetPrefab(itemName);
+        if (itemPrefab != null)
+        {
+            GameObject itemObj = Instantiate(itemPrefab, position, Quaternion.identity);
+
+            // è®¾ç½®ä¸ºItemç»„ä»¶ï¼ˆå¯æ¡æ‹¾ï¼‰
+            Item itemComponent = itemObj.GetComponent<Item>();
+            if (itemComponent != null)
+            {
+                itemComponent.itemName = itemName;
+            }
+
+            Debug.Log($"ç”Ÿæˆåˆå§‹ç‰©å“: {itemName} åœ¨ä½ç½® {position}");
+        }
+    }
+
+    // ä»¿ç…§Box.csçš„æ–¹å¼ä¿å­˜å’Œæ¢å¤çŠ¶æ€
+    private void OnAfterSceneLoadedEvent()
+    {
+        // æ£€æŸ¥æ˜¯å¦æ˜¯æ–°æ¸¸æˆï¼ˆæ²¡æœ‰çª—æˆ·å­˜æ¡£ï¼‰
+        bool hasWindowSave = PlayerPrefs.HasKey("WindowPuzzle_State");
+        Debug.Log($"WindowPuzzle: å¼€å§‹æ¢å¤çŠ¶æ€, æœ‰å­˜æ¡£: {hasWindowSave}");
+
+        if (!hasWindowSave)
+        {
+            // æ–°æ¸¸æˆï¼Œç›´æ¥ä½¿ç”¨é»˜è®¤çŠ¶æ€
+            currentState = WindowState.Normal;
+            shadowInteractive.dialogueStarted = false;
+            completedCount = 0;
+            Debug.Log("æ–°æ¸¸æˆï¼Œä½¿ç”¨é»˜è®¤çŠ¶æ€");
+        }
+        else
+        {
+            // ä»PlayerPrefsæ¢å¤çŠ¶æ€
+            currentState = (WindowState)PlayerPrefs.GetInt("WindowPuzzle_State", 0);
+            shadowInteractive.dialogueStarted = PlayerPrefs.GetInt("WindowPuzzle_DialogueStarted", 0) == 1;
+            completedCount = PlayerPrefs.GetInt("WindowPuzzle_CompletedCount", 0);
+
+            Debug.Log($"æ¢å¤çŠ¶æ€ - currentState: {currentState}, dialogueStarted: {shadowInteractive.dialogueStarted}, completedCount: {completedCount}");
+
+            // æ¢å¤çª—æˆ·å†…æ‰€æœ‰ç‰©å“
+            string windowItemsStr = PlayerPrefs.GetString("WindowPuzzle_WindowItems", "");
+            Debug.Log($"çª—æˆ·ç‰©å“å­—ç¬¦ä¸²: {windowItemsStr}");
+
+            if (!string.IsNullOrEmpty(windowItemsStr))
+            {
+                string[] items = windowItemsStr.Split('|');
+                foreach (string itemStr in items)
+                {
+                    string[] parts = itemStr.Split(':');
+                    if (parts.Length == 4)
+                    {
+                        int targetIndex = int.Parse(parts[0]);
+                        float posX = float.Parse(parts[1]);
+                        float posY = float.Parse(parts[2]);
+                        bool isPlaced = int.Parse(parts[3]) == 1;
+
+                        ItemName itemName = GetItemNameByTargetIndex(targetIndex);
+                        Debug.Log($"æ¢å¤ç‰©å“: {itemName} ä½ç½®({posX},{posY}) å·²æ”¾ç½®:{isPlaced}");
+
+                        if (itemName != ItemName.None)
+                        {
+                            GameObject itemPrefab = ItemPrefabDict.Instance.GetPrefab(itemName);
+                            if (itemPrefab != null)
+                            {
+                                Vector3 itemPos = new Vector3(posX, posY, 0);
+                                GameObject itemObj = Instantiate(itemPrefab, itemPos, Quaternion.identity);
+                                Draggable draggable = itemObj.GetComponent<Draggable>();
+                                if (draggable != null)
+                                {
+                                    draggable.targetIndex = targetIndex;
+                                    draggable.isPlaced = isPlaced;
+                                    windowItems.Add(draggable);
+
+                                    if (isPlaced && targetIndex >= 0 && targetIndex < placedItems.Length)
+                                    {
+                                        placedItems[targetIndex] = draggable;
+                                    }
+
+                                    // è®¾ç½®æ¸²æŸ“å±‚çº§
+                                    SpriteRenderer sr = itemObj.GetComponent<SpriteRenderer>();
+                                    if (sr != null) sr.sortingOrder = isPlaced ? 10 : 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // æ¢å¤è§†è§‰çŠ¶æ€
+        RestoreVisualState();
+        Debug.Log("WindowPuzzle: çŠ¶æ€æ¢å¤å®Œæˆ");
+    }
+
+    // ä¿å­˜çŠ¶æ€åˆ°PlayerPrefs
+    private void SaveState()
+    {
+        Debug.Log($"ä¿å­˜çŠ¶æ€åˆ°PlayerPrefs - currentState: {currentState}, dialogueStarted: {shadowInteractive.dialogueStarted}, completedCount: {completedCount}");
+        PlayerPrefs.SetInt("WindowPuzzle_State", (int)currentState);
+        PlayerPrefs.SetInt("WindowPuzzle_DialogueStarted", shadowInteractive.dialogueStarted ? 1 : 0);
+        PlayerPrefs.SetInt("WindowPuzzle_CompletedCount", completedCount);
+
+        // ä¿å­˜çª—æˆ·å†…æ‰€æœ‰ç‰©å“çš„ä¿¡æ¯ (ç±»å‹:ä½ç½®X:ä½ç½®Y:æ˜¯å¦å·²æ”¾ç½®)
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        foreach (var item in windowItems)
+        {
+            if (item != null)
+            {
+                string itemData = $"{(int)item.targetIndex}:{item.transform.position.x}:{item.transform.position.y}:{(item.isPlaced ? 1 : 0)}";
+                if (sb.Length > 0) sb.Append("|");
+                sb.Append(itemData);
+            }
+        }
+        string itemsStr = sb.ToString();
+        PlayerPrefs.SetString("WindowPuzzle_WindowItems", itemsStr);
+        PlayerPrefs.Save();
+        Debug.Log($"PlayerPrefså·²ä¿å­˜ - çª—æˆ·ç‰©å“: {itemsStr}");
+
+        // ä¿å­˜å½“å‰åœºæ™¯å
+        PlayerPrefs.SetString("CurrentScene", SceneManager.GetActiveScene().name);
+    }
+
+    private void RestoreVisualState()
+    {
+        Debug.Log($"æ¢å¤è§†è§‰çŠ¶æ€: {currentState}");
+        SpriteRenderer windowRenderer = GetComponent<SpriteRenderer>();
+
+        switch (currentState)
+        {
+            case WindowState.Normal:
+                // é»˜è®¤çŠ¶æ€
+                shadowObject.SetActive(false);
+                if (windowRenderer != null && originalWindowSprite != null)
+                {
+                    windowRenderer.sprite = originalWindowSprite;
+                }
+                break;
+            case WindowState.PuzzleCompleted:
+                // å·²å®Œæˆæ‹¼å›¾ï¼Œéšè—ç‰©å“
+                for (int i = 0; i < placedItems.Length; i++)
+                {
+                    if (placedItems[i] != null)
+                        placedItems[i].gameObject.SetActive(false);
+                }
+                break;
+            case WindowState.Black:
+                // çª—æˆ·å˜é»‘
+                if (windowRenderer != null && blackWindowSprite != null)
+                {
+                    windowRenderer.sprite = blackWindowSprite;
+                }
+                break;
+            case WindowState.ShadowShown:
+                // æ˜¾ç¤ºäººå½±
+                shadowObject.SetActive(true);
+                break;
+            case WindowState.PostDialogue:
+            case WindowState.Shadow1:
+            case WindowState.Shadow2:
+            case WindowState.Item:
+                // å¯¹è¯åçš„çŠ¶æ€ï¼Œæ¢å¤åˆ°PostDialogueç­‰å¾…ç‚¹å‡»
+                currentState = WindowState.PostDialogue;
+                if (windowRenderer != null && blackWindowSprite != null)
+                {
+                    windowRenderer.sprite = blackWindowSprite;
+                }
+                break;
+        }
+    }
+
+    private void OnDialogueFinished()
+    {
+        currentState = WindowState.PostDialogue;
+        Debug.Log("å¯¹è¯ç»“æŸï¼Œè¿›å…¥åç»­å‰§æƒ…æ¨¡å¼");
     }
 
     public override void CheckItem(ItemName itemName)
     {
-        // ¶ÔÓÚ´°»§ÃÕÌâ£¬×ÜÊÇÖ´ĞĞ¿Õµã»÷Âß¼­£¨Éú³ÉÎïÆ·£©
         EmptyClicked();
     }
 
-    // ¼ì²âÎïÆ·ÊÇ·ñ·ÅÔÚÕıÈ·Î»ÖÃ
-    //public void CheckItemPlacement(Draggable item)
-    //{
-    //    int index = item.targetIndex;
-    //    // ¼ì²éÎïÆ·ÊÇ·ñ½Ó½üÄ¿±êÎ»ÖÃ£¨ÔÊĞíÒ»¶¨Îó²î£©
-    //    if (Vector2.Distance(item.transform.position, targetPositions[index].position) < 50f)
-    //    {
-    //        if (!item.isPlaced)
-    //        {
-    //            item.isPlaced = true;
-    //            item.transform.position = targetPositions[index].position; // Îü¸½µ½Ä¿±êÎ»ÖÃ
-    //            placedItems[index] = item;
-    //            completedCount++;
-    //            CheckAllCompleted();
-    //        }
-    //    }
-    //    else if (item.isPlaced)
-    //    {
-    //        // ÒÑ·ÅÖÃµ«±»ÒÆ¿ª
-    //        item.isPlaced = false;
-    //        placedItems[index] = null;
-    //        completedCount--;
-    //    }
-    //}
-    //public void CheckItemPlacement(Draggable item)
-    //{
-    //    int index = item.targetIndex;
-
-    //    // ¼ì²éÎïÆ·ÊÇ·ñ½Ó½üÄ¿±êÎ»ÖÃ£¨Ê¹ÓÃÊÀ½ç¾àÀë£©
-    //    if (Vector3.Distance(item.transform.position, targetPositions[index].position) < 0.5f) // µ÷Õû¾àÀëãĞÖµ
-    //    {
-    //        if (!item.isPlaced)
-    //        {
-    //            item.isPlaced = true;
-    //            item.transform.position = targetPositions[index].position; // Îü¸½µ½ÊÀ½çÎ»ÖÃ
-    //            placedItems[index] = item;
-    //            completedCount++;
-    //            CheckAllCompleted();
-    //        }
-    //    }
-    //    else if (item.isPlaced)
-    //    {
-    //        item.isPlaced = false;
-    //        placedItems[index] = null;
-    //        completedCount--;
-    //    }
-    //}
     public void CheckItemPlacement(Draggable item)
     {
         int index = item.targetIndex;
-        if (Vector3.Distance(item.transform.position, targetPositions[index].position) < 0.5f)
+        float distance = Vector3.Distance(item.transform.position, targetPositions[index].position);
+        Debug.Log($"æ£€æŸ¥ç‰©å“æ”¾ç½®: ç‰©å“{item.name}, ç›®æ ‡ç´¢å¼•{index}, è·ç¦»{distance}");
+
+        if (distance < 0.5f)
         {
             if (!item.isPlaced)
             {
+                Debug.Log($"ç‰©å“æ”¾ç½®æˆåŠŸ: ç´¢å¼•{index}");
                 item.isPlaced = true;
                 item.transform.position = targetPositions[index].position;
-                // ÒÑ·ÅÖÃµÄÎïÆ·ÏÔÊ¾ÔÚÇ°Ãæ
                 SpriteRenderer sr = item.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                {
-                    sr.sortingOrder = 0;
-                }
+                if (sr != null) sr.sortingOrder = 10;
                 placedItems[index] = item;
                 completedCount++;
                 CheckAllCompleted();
+                SaveState(); // ä¿å­˜ç‰©å“æ”¾ç½®çŠ¶æ€
             }
         }
         else if (item.isPlaced)
         {
+            Debug.Log($"ç‰©å“ç§»å¼€: ç´¢å¼•{index}");
             item.isPlaced = false;
-            // È¡Ïû·ÅÖÃÊ±»Ö¸´Õı³£Ë³Ğò
             SpriteRenderer sr = item.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sortingOrder = 10;
-            }
+            if (sr != null) sr.sortingOrder = 0;
             placedItems[index] = null;
             completedCount--;
+            SaveState(); // ä¿å­˜ç‰©å“ç§»é™¤çŠ¶æ€
         }
     }
-
-
-    // ¼ì²éËùÓĞÆ´Í¼ÊÇ·ñÍê³É
-    //private void CheckAllCompleted()
-    //{
-    //    if (completedCount == 4)
-    //    {
-    //        // ´¥·¢´°»§±äºÚºÍ³öÏÖÈËÓ°
-    //        OnPuzzleCompleted();
-    //    }
-    //}
 
     private void CheckAllCompleted()
     {
         if (completedCount == 4 && currentState == WindowState.Normal)
         {
             currentState = WindowState.PuzzleCompleted;
-            // ¿ÉÒÔÌí¼ÓÉÁË¸Ğ§¹û»òÌáÊ¾£¬±íÊ¾¿ÉÒÔµã»÷
-            Debug.Log("Æ´Í¼Íê³É£¬µã»÷´°»§¼ÌĞø");
+            Debug.Log("æ‹¼å›¾å®Œæˆï¼Œç‚¹å‡»çª—æˆ·ç»§ç»­");
         }
     }
-
-    private void OnPuzzleCompleted()
-    {
-        // 1. ´°»§±äºÚ£¨ĞŞ¸Ä´°»§Sprite»òÌí¼ÓºÚÉ«ÕÚÕÖ£©
-        SpriteRenderer windowSprite = GetComponent<SpriteRenderer>();
-        //windowSprite.color = Color.black;
-        windowSprite.sprite = blackWindowSprite;
-
-        // 2. ÏÔÊ¾ÈËÓ°£¨¼¤»îÈËÓ°¶ÔÏó£©
-        GameObject shadow = transform.Find("Shadow").gameObject;
-        shadow.SetActive(true);
-
-        // 3. ´¥·¢ºóĞøÊÂ¼ş£¨Èç¾çÇé£©
-        EventHandler.CallPuzzleCompletedEvent();
-    }
-
-    // ÖØĞ´¿Õµã»÷·½·¨£¨µã»÷´°»§Ê±Èç¹ûÓĞÑ¡ÖĞÎïÆ·£¬Éú³ÉÎïÆ·µ½´°»§ÇøÓò£©
-    //public override void EmptyClicked()
-    //{
-    //    if (CursorManager.Instance.CurrentItem != ItemName.None)
-    //    {
-    //        // Éú³ÉÑ¡ÖĞµÄÎïÆ·µ½´°»§ÇøÓò
-    //        SpawnItemInWindow(CursorManager.Instance.CurrentItem);
-    //        // ´ÓÎïÆ·À¸ÒÆ³ı¸ÃÎïÆ·
-    //        EventHandler.CallItemUsedEvent(CursorManager.Instance.CurrentItem);
-    //    }
-    //}
 
     public override void EmptyClicked()
     {
@@ -158,75 +367,91 @@ public class WindowPuzzle : Interactive
         {
             SpawnItemInWindow(CursorManager.Instance.CurrentItem);
             EventHandler.CallItemUsedEvent(CursorManager.Instance.CurrentItem);
+            SaveState(); // ä¿å­˜çŠ¶æ€
             return;
         }
 
-        // ¸ù¾İ×´Ì¬´¦Àíµã»÷
+        Debug.Log($"å½“å‰çŠ¶æ€: {currentState}");
         switch (currentState)
         {
             case WindowState.PuzzleCompleted:
-                // Òş²ØËùÓĞÒÑ·ÅÖÃµÄÎïÆ·
                 for (int i = 0; i < placedItems.Length; i++)
                 {
                     if (placedItems[i] != null)
-                    {
                         placedItems[i].gameObject.SetActive(false);
-                    }
                 }
-                // ±äºÚ
                 SpriteRenderer windowSprite = GetComponent<SpriteRenderer>();
                 windowSprite.sprite = blackWindowSprite;
-                //windowSprite.color = Color.black;
                 currentState = WindowState.Black;
+                SaveState(); // ä¿å­˜çŠ¶æ€
                 break;
             case WindowState.Black:
-                // ÏÔÊ¾ÈËÓ°
-                GameObject shadow = transform.Find("Shadow").gameObject;
-                shadow.SetActive(true);
+                shadowObject.SetActive(true);
                 currentState = WindowState.ShadowShown;
                 EventHandler.CallPuzzleCompletedEvent();
+                SaveState(); // ä¿å­˜çŠ¶æ€
                 break;
             case WindowState.ShadowShown:
-                // ¿ÉÑ¡£ºÔÙ´Îµã»÷Òş²ØÈËÓ°»ò´¥·¢ÆäËûÊÂ¼ş
+                // ç­‰å¾…å¯¹è¯ç»“æŸ
+                break;
+            case WindowState.PostDialogue:
+                // äººå½±æ¶ˆå¤±
+                shadowObject.transform.position = new Vector3(1000, 1000, 0);
+                shadowObject.SetActive(false); // ç¡®ä¿éšè—
+                currentState = WindowState.Shadow1;
+                SaveState(); // ä¿å­˜çŠ¶æ€
+                break;
+            case WindowState.Shadow1:
+                // æ˜¾ç¤ºç¬¬äºŒä¸ªäººå½±ï¼ˆä½ç½®åç§»ï¼‰
+                shadowObject.SetActive(true);
+                shadowObject.transform.position = shadowOriginalPosition + new Vector3(0.07f, 0.32f, 0);
+                if (shadowInteractive.newShadow1Sprite != null)
+                {
+                    shadowObject.GetComponent<SpriteRenderer>().sprite = shadowInteractive.newShadow1Sprite;
+                }
+                currentState = WindowState.Shadow2;
+                SaveState(); // ä¿å­˜çŠ¶æ€
+                break;
+            case WindowState.Shadow2:
+                // æ˜¾ç¤ºç¬¬ä¸‰ä¸ªäººå½±ï¼ˆä½ç½®åç§»ï¼‰
+                shadowObject.transform.position = shadowOriginalPosition + new Vector3(0.86f, 0.37f, 0);
+                if (shadowInteractive.newShadow2Sprite != null)
+                {
+                    shadowObject.GetComponent<SpriteRenderer>().sprite = shadowInteractive.newShadow2Sprite;
+                }
+                currentState = WindowState.Item;
+                SaveState(); // ä¿å­˜çŠ¶æ€
+                break;
+            case WindowState.Item:
+                // ç”Ÿæˆç‰©å“åˆ°çª—æˆ·æ—è¾¹
+                Vector3 itemPos = transform.position + new Vector3(0, -2f, 0);
+                if (shadowInteractive.pickupItemPrefab != null)
+                {
+                    Instantiate(shadowInteractive.pickupItemPrefab, itemPos, Quaternion.identity);
+                }
+                shadowObject.SetActive(false);
+                currentState = WindowState.Normal;
+                SaveState(); // ä¿å­˜çŠ¶æ€
                 break;
         }
     }
 
-
-    // ÔÚ´°»§ÇøÓòËæ»úÎ»ÖÃÉú³ÉÎïÆ·
     private void SpawnItemInWindow(ItemName itemName)
     {
-        // ¸ù¾İÎïÆ·Ãû³Æ»ñÈ¡¶ÔÓ¦µÄprefab£¨ĞèÒªÌáÇ°ÔÚ×ÖµäÖĞ×¢²á£©
         GameObject itemPrefab = ItemPrefabDict.Instance.GetPrefab(itemName);
-        GameObject item = Instantiate(itemPrefab, GetRandomWindowPosition(), Quaternion.identity);
-        // ÉèÖÃÎïÆ·µÄÄ¿±êË÷Òı£¨¸ù¾İÎïÆ·ÀàĞÍÈ·¶¨£©
-        item.GetComponent<Draggable>().targetIndex = GetTargetIndexByItem(itemName);
+        if (itemPrefab == null) return;
+
+        Vector2 spawnPos = GetRandomWindowPosition();
+        GameObject item = Instantiate(itemPrefab, spawnPos, Quaternion.identity);
+        Draggable draggable = item.GetComponent<Draggable>();
+        if (draggable != null)
+        {
+            draggable.targetIndex = GetTargetIndexByItem(itemName);
+            // æ·»åŠ åˆ°çª—æˆ·ç‰©å“åˆ—è¡¨
+            windowItems.Add(draggable);
+            SaveState(); // ä¿å­˜ç”Ÿæˆçš„æ–°ç‰©å“
+        }
     }
-    //private void SpawnItemInWindow(ItemName itemName)
-    //{
-    //    Debug.Log($"³¢ÊÔÉú³ÉÎïÆ·: {itemName}");
-    //    GameObject itemPrefab = ItemPrefabDict.Instance.GetPrefab(itemName);
-    //    if (itemPrefab == null)
-    //    {
-    //        Debug.LogError($"Î´ÕÒµ½ÎïÆ· {itemName} µÄÔ¤ÖÆÌå");
-    //        return;
-    //    }
-
-    //    Vector2 spawnPos = GetRandomWindowPosition();
-    //    Debug.Log($"Éú³ÉÎ»ÖÃ: {spawnPos}");
-    //    GameObject item = Instantiate(itemPrefab, spawnPos, Quaternion.identity);
-    //    item.GetComponent<Draggable>().targetIndex = GetTargetIndexByItem(itemName);
-    //    Debug.Log($"ÎïÆ·ÒÑÉú³É: {item.name}");
-    //}
-
-    // Ëæ»úÉú³É´°»§ÇøÓòÄÚµÄÎ»ÖÃ
-    //private Vector2 GetRandomWindowPosition()
-    //{
-    //    RectTransform windowArea = GameObject.Find("WindowArea").GetComponent<RectTransform>();
-    //    float x = Random.Range(windowArea.rect.xMin, windowArea.rect.xMax);
-    //    float y = Random.Range(windowArea.rect.yMin, windowArea.rect.yMax);
-    //    return windowArea.TransformPoint(new Vector2(x, y));
-    //}
 
     private Vector2 GetRandomWindowPosition()
     {
@@ -237,22 +462,22 @@ public class WindowPuzzle : Interactive
         return new Vector2(x, y);
     }
 
-    // ¸ù¾İÎïÆ·ÀàĞÍ»ñÈ¡Ä¿±êÎ»ÖÃË÷Òı£¨Ğè×Ô¶¨ÒåÓ³Éä¹ØÏµ£©
-    //private int GetTargetIndexByItem(ItemName itemName)
-    //{
-    //    switch (itemName)
-    //    {
-    //        case ItemName.paper1: return 0;
-    //        case ItemName.paper2: return 1;
-    //        case ItemName.paper3: return 2;
-    //        case ItemName.paper4: return 3;
-    //        default: return -1;
-    //    }
-    //}
-
     private int GetTargetIndexByItem(ItemName itemName)
     {
-        // ´ÓItemDataÖĞ»ñÈ¡ÎïÆ·ÏêÇé£¬Ö±½Ó·µ»ØÅäÖÃµÄtargetPositionIndex
         return itemData.GetItemDetails(itemName).targetPositionIndex;
+    }
+
+    // æ·»åŠ è¾…åŠ©æ–¹æ³•
+    private ItemName GetItemNameByTargetIndex(int index)
+    {
+        // æ ¹æ®targetPositionIndexåæŸ¥ç‰©å“åç§°
+        foreach (var itemDetails in itemData.itemDetailsList)
+        {
+            if (itemDetails.targetPositionIndex == index)
+            {
+                return itemDetails.itemName;
+            }
+        }
+        return ItemName.None;
     }
 }

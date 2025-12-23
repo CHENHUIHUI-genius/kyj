@@ -1,39 +1,67 @@
 using UnityEngine;
 
-// ÏÈ¼Ì³ĞInteractive
+// å…ˆç»§æ‰¿Interactive
 public class Box : Interactive
 {
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D coll;
+    private Sprite closedSprite;    // ä¿å­˜å…³é—­çŠ¶æ€çš„åŸå§‹å›¾ç‰‡
 
-    public Sprite openSprite;       // ´ò¿ªÊ±ĞèÒªÇĞ»»Ò»ÏÂÍ¼Æ¬
+    public Sprite openSprite;       // æ‰“å¼€æ—¶éœ€è¦åˆ‡æ¢ä¸€ä¸‹å›¾ç‰‡
 
-    // µã»÷Ò»´Îºó¾Í²»Ï£Íû¸ÃmailboxÔÙ´Î±»µã»÷
+    // ç‚¹å‡»ä¸€æ¬¡åå°±ä¸å¸Œæœ›è¯¥mailboxå†æ¬¡è¢«ç‚¹å‡»
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         coll = GetComponent<BoxCollider2D>();
+        // ä¿å­˜å…³é—­çŠ¶æ€çš„åŸå§‹å›¾ç‰‡
+        closedSprite = spriteRenderer.sprite;
     }
 
-    // ÅĞ¶Ïpaper¸Ã²»¸ÃÏÔÊ¾£¿Ò²¾ÍÊÇ³¡¾°±»¼ÓÔØÖ®ºó
+    // åˆ¤æ–­paperè¯¥ä¸è¯¥æ˜¾ç¤ºï¼Ÿä¹Ÿå°±æ˜¯åœºæ™¯è¢«åŠ è½½ä¹‹å
     private void OnEnable()
     {
         EventHandler.AfterSceneLoadedEvent += OnAfterSceneLoadedEvent;
+        EventHandler.StartNewGameEvent += OnStartNewGameEvent;
     }
 
     private void OnDisable()
     {
         EventHandler.AfterSceneLoadedEvent -= OnAfterSceneLoadedEvent;
+        EventHandler.StartNewGameEvent -= OnStartNewGameEvent;
+    }
+
+    // æ–°æ¸¸æˆå¼€å§‹æ—¶é‡ç½®BoxçŠ¶æ€
+    private void OnStartNewGameEvent()
+    {
+        Debug.Log($"é‡ç½®Box: {gameObject.name}");
+        // é‡ç½®å®ŒæˆçŠ¶æ€
+        isDone = false;
+        // æ¢å¤å…³é—­çŠ¶æ€çš„åŸå§‹å›¾ç‰‡
+        if (spriteRenderer != null && closedSprite != null)
+        {
+            spriteRenderer.sprite = closedSprite;
+        }
+        // å¯ç”¨ç¢°æ’ä½“
+        if (coll != null)
+        {
+            coll.enabled = true;
+        }
+        // éšè—å­ç‰©ä½“ï¼ˆå¦‚æœæœ‰çš„è¯ï¼‰
+        if (transform.childCount > 0)
+        {
+            transform.GetChild(0).gameObject.SetActive(false);
+        }
     }
 
     private void OnAfterSceneLoadedEvent()
     {
-        // Ê×ÏÈÅĞ¶Ï»¥¶¯ÊÇ·ñÒÑ¾­Íê³É£¬Èç¹ûÃ»ÓĞÍê³É£¬Ä¬ÈÏĞèÒª½«mailpieceÒş²ØÆğÀ´£¬
+        // é¦–å…ˆåˆ¤æ–­äº’åŠ¨æ˜¯å¦å·²ç»å®Œæˆï¼Œå¦‚æœæ²¡æœ‰å®Œæˆï¼Œé»˜è®¤éœ€è¦å°†mailpieceéšè—èµ·æ¥ï¼Œ
         if (!isDone)
         {
             transform.GetChild(0).gameObject.SetActive(false);
         }
-        // »¥¶¯ÒÑ¾­Íê³É£¬Í¼Æ¬ĞèÒªÇĞ»»£¬ÇÒÅö×²ÌåÒ²Òª¹Ø±Õ
+        // äº’åŠ¨å·²ç»å®Œæˆï¼Œå›¾ç‰‡éœ€è¦åˆ‡æ¢ï¼Œä¸”ç¢°æ’ä½“ä¹Ÿè¦å…³é—­
         else
         {
             spriteRenderer.sprite = openSprite;
@@ -41,10 +69,10 @@ public class Box : Interactive
         }
     }
 
-    // ´ò¿ªÊ±ĞèÒªÇĞ»»Ò»ÏÂÍ¼Æ¬
+    // æ‰“å¼€æ—¶éœ€è¦åˆ‡æ¢ä¸€ä¸‹å›¾ç‰‡
     protected override void OnClickedAction()
     {
         spriteRenderer.sprite = openSprite;
-        transform.GetChild(0).gameObject.SetActive(true);   // ´ò¿ªboxºóĞèÒªÏÔÊ¾paper1
+        transform.GetChild(0).gameObject.SetActive(true);   // æ‰“å¼€boxåéœ€è¦æ˜¾ç¤ºpaper1
     }
 }

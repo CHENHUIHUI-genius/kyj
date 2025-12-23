@@ -116,23 +116,27 @@ public static class EventHandler
     public static void CallPuzzleCompletedEvent() => PuzzleCompletedEvent?.Invoke(); // 新增
     #endregion
 
-    //#region 对话相关事件
-    ///// <summary>
-    ///// 显示对话事件
-    ///// 触发时机：玩家与NPC交互、触发剧情时，通知UI系统显示对话文本
-    ///// 参数：对话内容（string）- 要显示的文本
-    ///// </summary>
-    //public static event Action<string> ShowDialogueEvent;
+    #region 对话相关事件
+    /// <summary>
+    /// 显示对话事件
+    /// 触发时机：玩家与NPC交互、触发剧情时，通知UI系统显示对话文本
+    /// 参数：对话内容（string）- 要显示的文本
+    /// </summary>
+    public static event Action<string> ShowDialogueEvent;
 
-    ///// <summary>
-    ///// 触发显示对话事件
-    ///// </summary>
-    ///// <param name="dialogue">对话内容</param>
-    //public static void CallShowDialogueEvent(string dialogue)
-    //{
-    //    ShowDialogueEvent?.Invoke(dialogue);
-    //}
-    //#endregion
+    /// <summary>
+    /// 触发显示对话事件
+    /// </summary>
+    /// <param name="dialogue">对话内容</param>
+    public static void CallShowDialogueEvent(string dialogue)
+    {
+        ShowDialogueEvent?.Invoke(dialogue);
+    }
+
+    public static event Action DialogueFinishedEvent;
+    public static void CallDialogueFinishedEvent() => DialogueFinishedEvent?.Invoke();
+
+    #endregion
 
     //#region 游戏状态相关事件
     ///// <summary>
@@ -186,22 +190,17 @@ public static class EventHandler
     //}
     //#endregion
 
-    ///// <summary>
-    ///// 开始新游戏事件（静态无参事件）
-    ///// 触发时机：玩家点击“开始新游戏”按钮时，用于通知所有订阅者执行“新游戏初始化”逻辑
-    ///// 设计目的：解耦“点击按钮”操作与“新游戏启动”的具体逻辑（如重置数据、加载场景、初始化UI等）
-    ///// </summary>
-    //public static event Action StartNewGameEvent;
+    #region 菜单相关事件
+    /// <summary>
+    /// 开始新游戏事件
+    /// </summary>
+    public static event Action StartNewGameEvent;
+    public static void CallStartNewGameEvent() => StartNewGameEvent?.Invoke();
 
-    ///// <summary>
-    ///// 触发“开始新游戏”事件的静态封装方法
-    ///// 提供安全的事件调用入口，避免外部直接调用 Invoke 引发空引用异常
-    ///// </summary>
-    //public static void CallStartNewGameEvent()
-    //{
-    //    // 空条件运算符（?.）：先判断事件是否有订阅者（非null），再执行触发
-    //    // 若直接调用 StartNewGameEvent.Invoke()，无订阅者时会抛出 NullReferenceException
-    //    // Invoke()：触发所有订阅该事件的方法，执行新游戏初始化逻辑
-    //    StartNewGameEvent?.Invoke();
-    //}
+    /// <summary>
+    /// 返回菜单事件
+    /// </summary>
+    public static event Action GoBackToMenuEvent;
+    public static void CallGoBackToMenuEvent() => GoBackToMenuEvent?.Invoke();
+    #endregion
 }

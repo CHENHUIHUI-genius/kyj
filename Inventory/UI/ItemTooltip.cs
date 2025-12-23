@@ -14,6 +14,7 @@ public class ItemTooltip : MonoBehaviour
             ItemName.paper2 => "Ö½ºýËéÆ¬",
             ItemName.paper3 => "Ö½ºýËéÆ¬",
             ItemName.paper4 => "Ö½ºýËéÆ¬",
+            ItemName.door_key => "Ô¿³×",
             _ => ""
 
         };

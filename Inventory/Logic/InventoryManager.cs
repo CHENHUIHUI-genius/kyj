@@ -1,4 +1,4 @@
-// ÎïÆ·À¸×óÓÒ¼ü
+// ç‰©å“æ å·¦å³é”®
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -7,20 +7,20 @@ using UnityEditor.Overlays;
 using UnityEngine;
 
 /// <summary>
-/// ÎïÆ·À¸¹ÜÀíÆ÷£¨µ¥ÀıÄ£Ê½ + ´æµµ½Ó¿ÚÊµÏÖ£©
-/// ºËĞÄÖ°Ôğ£º¹ÜÀíÓÎÏ·ÄÚÎïÆ·µÄÌí¼Ó/Ê¹ÓÃ/ÒÆ³ı£¬Í¬²½¸üĞÂÎïÆ·À¸UI£¬Ö§³ÖÎïÆ·×´Ì¬µÄ´æµµ/¶Áµµ
-/// ÒÀÀµ£ºSingleton£¨µ¥Àı»ùÀà£©¡¢ISavable£¨´æµµ½Ó¿Ú£©¡¢EventHandler£¨È«¾ÖÊÂ¼ş£©¡¢ItemDataList_SO£¨ÎïÆ·ÅäÖÃSO£©
+/// ç‰©å“æ ç®¡ç†å™¨ï¼ˆå•ä¾‹æ¨¡å¼ + å­˜æ¡£æ¥å£å®ç°ï¼‰
+/// æ ¸å¿ƒèŒè´£ï¼šç®¡ç†æ¸¸æˆå†…ç‰©å“çš„æ·»åŠ /ä½¿ç”¨/ç§»é™¤ï¼ŒåŒæ­¥æ›´æ–°ç‰©å“æ UIï¼Œæ”¯æŒç‰©å“çŠ¶æ€çš„å­˜æ¡£/è¯»æ¡£
+/// ä¾èµ–ï¼šSingletonï¼ˆå•ä¾‹åŸºç±»ï¼‰ã€ISavableï¼ˆå­˜æ¡£æ¥å£ï¼‰ã€EventHandlerï¼ˆå…¨å±€äº‹ä»¶ï¼‰ã€ItemDataList_SOï¼ˆç‰©å“é…ç½®SOï¼‰
 /// </summary>
-//public class InventoryManager : Singleton<InventoryManager>, ISavable                                               //È¡Ïû×¢ÊÍ
-public class InventoryManager : Singleton<InventoryManager>                                                           //É¾³ı
+//public class InventoryManager : Singleton<InventoryManager>, ISavable                                               //å–æ¶ˆæ³¨é‡Š
+public class InventoryManager : Singleton<InventoryManager>                                                           //åˆ é™¤
 {
-    /// <summary> ÎïÆ·ÅäÖÃÊı¾İSO£¨´æ´¢ËùÓĞÎïÆ·µÄÃû³Æ¡¢ÌùÍ¼¡¢ÃèÊöµÈ¾²Ì¬ÅäÖÃ£© </summary>
+    /// <summary> ç‰©å“é…ç½®æ•°æ®SOï¼ˆå­˜å‚¨æ‰€æœ‰ç‰©å“çš„åç§°ã€è´´å›¾ã€æè¿°ç­‰é™æ€é…ç½®ï¼‰ </summary>
     public ItemDataList_SO itemData;
 
-    /// <summary> µ±Ç°ÎïÆ·À¸µÄÎïÆ·ÁĞ±í£¨´æ´¢ÎïÆ·Ãû³ÆÃ¶¾Ù£¬[SerializeField]ÔÊĞí±à¼­Æ÷µ÷ÊÔ²é¿´£© </summary>
+    /// <summary> å½“å‰ç‰©å“æ çš„ç‰©å“åˆ—è¡¨ï¼ˆå­˜å‚¨ç‰©å“åç§°æšä¸¾ï¼Œ[SerializeField]å…è®¸ç¼–è¾‘å™¨è°ƒè¯•æŸ¥çœ‹ï¼‰ </summary>
     //[SerializeField] private List<ItemName> itemList = new List<ItemName>();
     
-    // ¸ÄÎª¹Ì¶¨5¸ö²ÛÎ»µÄÊı×é£¨ÓëUIµÄslotsÊıÁ¿¶ÔÓ¦£©
+    // æ”¹ä¸ºå›ºå®š5ä¸ªæ§½ä½çš„æ•°ç»„ï¼ˆä¸UIçš„slotsæ•°é‡å¯¹åº”ï¼‰
     [SerializeField] private ItemName[] itemArray = new ItemName[5];
 
     private void Start()
@@ -31,39 +31,41 @@ public class InventoryManager : Singleton<InventoryManager>                     
         }
     }
 
-    /// <summary>
-    /// ½Å±¾¼¤»îÊ±¶©ÔÄÈ«¾ÖÊÂ¼ş£¨±ê×¼ÊÂ¼ş¶©ÔÄ·¶Ê½£©
-    /// ¼àÌıÎïÆ·Ê¹ÓÃ¡¢ÎïÆ·ÇĞ»»¡¢³¡¾°¼ÓÔØ¡¢ĞÂÓÎÏ·Æô¶¯µÈºËĞÄÊÂ¼ş£¬±£Ö¤Âß¼­Áª¶¯
-    /// </summary>
-    private void OnEnable()
-    {
-        EventHandler.ItemUsedEvent += OnItemUsedEvent;                      // ¶©ÔÄÎïÆ·Ê¹ÓÃÊÂ¼ş£º´¦ÀíÎïÆ·Ê¹ÓÃºóµÄÒÆ³ıÂß¼­
-    //    EventHandler.StartNewGameEvent += OnStartNewGameEvent;              // ¶©ÔÄ¿ªÊ¼ĞÂÓÎÏ·ÊÂ¼ş£ºÇå¿ÕÎïÆ·À¸
-    }
+/// <summary>
+/// è„šæœ¬æ¿€æ´»æ—¶è®¢é˜…å…¨å±€äº‹ä»¶ï¼ˆæ ‡å‡†äº‹ä»¶è®¢é˜…èŒƒå¼ï¼‰
+/// ç›‘å¬ç‰©å“ä½¿ç”¨ã€ç‰©å“åˆ‡æ¢ã€åœºæ™¯åŠ è½½ã€æ–°æ¸¸æˆå¯åŠ¨ç­‰æ ¸å¿ƒäº‹ä»¶ï¼Œä¿è¯é€»è¾‘è”åŠ¨
+/// </summary>
+private void OnEnable()
+{
+    EventHandler.ItemUsedEvent += OnItemUsedEvent;                      // è®¢é˜…ç‰©å“ä½¿ç”¨äº‹ä»¶ï¼šå¤„ç†ç‰©å“ä½¿ç”¨åçš„ç§»é™¤é€»è¾‘
+    EventHandler.StartNewGameEvent += OnStartNewGameEvent;              // è®¢é˜…å¼€å§‹æ–°æ¸¸æˆäº‹ä»¶ï¼šæ¸…ç©ºç‰©å“æ 
+    EventHandler.AfterSceneLoadedEvent += OnAfterSceneLoadedEvent;      // è®¢é˜…åœºæ™¯åŠ è½½åäº‹ä»¶ï¼šæ¢å¤ç‰©å“æ 
+}
 
-    /// <summary>
-    /// ½Å±¾½ûÓÃ/Ïú»ÙÊ±È¡ÏûÊÂ¼ş¶©ÔÄ£¨ºËĞÄ£º·ÀÖ¹ÄÚ´æĞ¹Â©¡¢¿ÕÒıÓÃÒì³££©
-    /// ÓëOnEnableµÄ¶©ÔÄÂß¼­ÑÏ¸ñÒ»Ò»¶ÔÓ¦£¬±ÜÃâÒÅÂ©
-    /// </summary>
-    private void OnDisable()
-    {
-        EventHandler.ItemUsedEvent -= OnItemUsedEvent;
-        //    EventHandler.StartNewGameEvent -= OnStartNewGameEvent;
-    }
+/// <summary>
+/// è„šæœ¬ç¦ç”¨/é”€æ¯æ—¶å–æ¶ˆäº‹ä»¶è®¢é˜…ï¼ˆæ ¸å¿ƒï¼šé˜²æ­¢å†…å­˜æ³„æ¼ã€ç©ºå¼•ç”¨å¼‚å¸¸ï¼‰
+/// ä¸OnEnableçš„è®¢é˜…é€»è¾‘ä¸¥æ ¼ä¸€ä¸€å¯¹åº”ï¼Œé¿å…é—æ¼
+/// </summary>
+private void OnDisable()
+{
+    EventHandler.ItemUsedEvent -= OnItemUsedEvent;
+    EventHandler.StartNewGameEvent -= OnStartNewGameEvent;
+    EventHandler.AfterSceneLoadedEvent -= OnAfterSceneLoadedEvent;
+}
 
     ///// <summary>
-    ///// ³õÊ¼»¯·½·¨£¨UnityÉúÃüÖÜÆÚ£©
-    ///// ºËĞÄ£º½«ÎïÆ·À¸¹ÜÀíÆ÷×¢²áµ½´æµµÏµÍ³£¬±£Ö¤ÎïÆ·×´Ì¬ÄÜ±»´æµµ/¶Áµµ
+    ///// åˆå§‹åŒ–æ–¹æ³•ï¼ˆUnityç”Ÿå‘½å‘¨æœŸï¼‰
+    ///// æ ¸å¿ƒï¼šå°†ç‰©å“æ ç®¡ç†å™¨æ³¨å†Œåˆ°å­˜æ¡£ç³»ç»Ÿï¼Œä¿è¯ç‰©å“çŠ¶æ€èƒ½è¢«å­˜æ¡£/è¯»æ¡£
     ///// </summary>
     //private void Start()
     //{
     //    ISavable savable = this;
-    //    savable.SavableRegister(); // µ÷ÓÃISavable½Ó¿ÚµÄÄ¬ÈÏ·½·¨£¬×¢²áµ½SaveLoadManager
+    //    savable.SavableRegister(); // è°ƒç”¨ISavableæ¥å£çš„é»˜è®¤æ–¹æ³•ï¼Œæ³¨å†Œåˆ°SaveLoadManager
     //}
 
     ///// <summary>
-    ///// ÏìÓ¦¡°¿ªÊ¼ĞÂÓÎÏ·¡±ÊÂ¼şµÄ´¦Àíº¯Êı
-    ///// Âß¼­£ºÇå¿ÕÎïÆ·À¸ÁĞ±í£¬ĞÂÓÎÏ·´ÓÁã¿ªÊ¼£¬ÎŞÈÎºÎÎïÆ·
+    ///// å“åº”â€œå¼€å§‹æ–°æ¸¸æˆâ€äº‹ä»¶çš„å¤„ç†å‡½æ•°
+    ///// é€»è¾‘ï¼šæ¸…ç©ºç‰©å“æ åˆ—è¡¨ï¼Œæ–°æ¸¸æˆä»é›¶å¼€å§‹ï¼Œæ— ä»»ä½•ç‰©å“
     ///// </summary>
     //private void OnStartNewGameEvent()
     //{
@@ -71,16 +73,81 @@ public class InventoryManager : Singleton<InventoryManager>                     
     //}
 
 
-    // Ê¹ÓÃÎïÆ·Ê±Ö»Çå¿Õµ±Ç°²ÛÎ»£¬²»ÒÆ¶¯ÆäËûÎïÆ·
+    // ä½¿ç”¨ç‰©å“æ—¶åªæ¸…ç©ºå½“å‰æ§½ä½ï¼Œä¸ç§»åŠ¨å…¶ä»–ç‰©å“
     private void OnItemUsedEvent(ItemName itemName)
     {
         for (int i = 0; i < itemArray.Length; i++)
         {
             if (itemArray[i] == itemName)
             {
-                itemArray[i] = ItemName.None; // ±ê¼ÇÎª¿Õ
-                EventHandler.CallUpdateUIEvent(null, i); // Í¨ÖªUIÇå¿Õ¸Ã²ÛÎ»
+                itemArray[i] = ItemName.None; // æ ‡è®°ä¸ºç©º
+                EventHandler.CallUpdateUIEvent(null, i); // é€šçŸ¥UIæ¸…ç©ºè¯¥æ§½ä½
+                SaveInventoryState(); // ä¿å­˜ç‰©å“æ çŠ¶æ€
                 return;
+            }
+        }
+    }
+
+    // å¼€å§‹æ–°æ¸¸æˆæ—¶æ¸…ç©ºç‰©å“æ 
+    private void OnStartNewGameEvent()
+    {
+        Debug.Log("æ¸…ç©ºç‰©å“æ  - å¼€å§‹æ–°æ¸¸æˆ");
+        for (int i = 0; i < itemArray.Length; i++)
+        {
+            itemArray[i] = ItemName.None;
+            EventHandler.CallUpdateUIEvent(null, i); // æ¸…ç©ºUI
+        }
+    }
+
+    // åœºæ™¯åŠ è½½åæ¢å¤ç‰©å“æ 
+    private void OnAfterSceneLoadedEvent()
+    {
+        Debug.Log("æ¢å¤ç‰©å“æ çŠ¶æ€");
+        LoadInventoryState();
+
+        // æ›´æ–°UIæ˜¾ç¤º
+        for (int i = 0; i < itemArray.Length; i++)
+        {
+            if (itemArray[i] != ItemName.None)
+            {
+                EventHandler.CallUpdateUIEvent(itemData.GetItemDetails(itemArray[i]), i);
+            }
+            else
+            {
+                EventHandler.CallUpdateUIEvent(null, i);
+            }
+        }
+    }
+
+    // ä¿å­˜ç‰©å“æ çŠ¶æ€åˆ°PlayerPrefs
+    private void SaveInventoryState()
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        for (int i = 0; i < itemArray.Length; i++)
+        {
+            if (sb.Length > 0) sb.Append(",");
+            sb.Append((int)itemArray[i]);
+        }
+        PlayerPrefs.SetString("Inventory_Items", sb.ToString());
+        PlayerPrefs.Save();
+        Debug.Log($"ç‰©å“æ å·²ä¿å­˜: {sb.ToString()}");
+    }
+
+    // ä»PlayerPrefsåŠ è½½ç‰©å“æ çŠ¶æ€
+    private void LoadInventoryState()
+    {
+        string inventoryStr = PlayerPrefs.GetString("Inventory_Items", "");
+        Debug.Log($"åŠ è½½ç‰©å“æ : {inventoryStr}");
+
+        if (!string.IsNullOrEmpty(inventoryStr))
+        {
+            string[] items = inventoryStr.Split(',');
+            for (int i = 0; i < Mathf.Min(items.Length, itemArray.Length); i++)
+            {
+                if (int.TryParse(items[i], out int itemValue))
+                {
+                    itemArray[i] = (ItemName)itemValue;
+                }
             }
         }
     }
@@ -88,24 +155,25 @@ public class InventoryManager : Singleton<InventoryManager>                     
 
     public void AddItem(ItemName itemName)
     {
-        // ±ÜÃâÖØ¸´Ìí¼Ó£¨Èç¹ûĞèÒª¿É¶Ñµş¿ÉÉ¾³ı´ËÅĞ¶Ï£©
+        // é¿å…é‡å¤æ·»åŠ ï¼ˆå¦‚æœéœ€è¦å¯å †å å¯åˆ é™¤æ­¤åˆ¤æ–­ï¼‰
         if (System.Array.IndexOf(itemArray, itemName) != -1)
             return;
 
-        // ²éÕÒµÚÒ»¸ö¿Õ²ÛÎ»
+        // æŸ¥æ‰¾ç¬¬ä¸€ä¸ªç©ºæ§½ä½
         for (int i = 0; i < itemArray.Length; i++)
         {
             if (itemArray[i] == ItemName.None)
             {
                 itemArray[i] = itemName;
                 EventHandler.CallUpdateUIEvent(itemData.GetItemDetails(itemName), i);
+                SaveInventoryState(); // ä¿å­˜ç‰©å“æ çŠ¶æ€
                 return;
             }
         }
-        Debug.LogWarning("ÎïÆ·À¸ÒÑÂú");
+        Debug.LogWarning("ç‰©å“æ å·²æ»¡");
     }
 
-    // ¸¨Öú·½·¨£º»ñÈ¡ÎïÆ·ËùÔÚ²ÛÎ»Ë÷Òı£¨ÓÃÓÚÑéÖ¤£©
+    // è¾…åŠ©æ–¹æ³•ï¼šè·å–ç‰©å“æ‰€åœ¨æ§½ä½ç´¢å¼•ï¼ˆç”¨äºéªŒè¯ï¼‰
     private int GetItemIndex(ItemName itemName)
     {
         return System.Array.IndexOf(itemArray, itemName);
@@ -113,41 +181,41 @@ public class InventoryManager : Singleton<InventoryManager>                     
 
 
 
-    /// <summary>Ë½ÓĞ¹¤¾ß·½·¨£º¸ù¾İÎïÆ·Ãû³Æ²éÕÒÆäÔÚÁĞ±íÖĞµÄË÷Òı  ×÷ÓÃ£º·â×°Ë÷Òı²éÑ¯Âß¼­£¬±ÜÃâÖØ¸´´úÂë</summary>
-    /// <param name="itemName">Òª²éÕÒµÄÎïÆ·Ãû³Æ£¨Ã¶¾Ù£©</param>
-    /// <returns>ÎïÆ·Ë÷Òı£¨´æÔÚÔò·µ»Ø¶ÔÓ¦ÏÂ±ê£¬²»´æÔÚ·µ»Ø-1£©</returns>
+    /// <summary>ç§æœ‰å·¥å…·æ–¹æ³•ï¼šæ ¹æ®ç‰©å“åç§°æŸ¥æ‰¾å…¶åœ¨åˆ—è¡¨ä¸­çš„ç´¢å¼•  ä½œç”¨ï¼šå°è£…ç´¢å¼•æŸ¥è¯¢é€»è¾‘ï¼Œé¿å…é‡å¤ä»£ç </summary>
+    /// <param name="itemName">è¦æŸ¥æ‰¾çš„ç‰©å“åç§°ï¼ˆæšä¸¾ï¼‰</param>
+    /// <returns>ç‰©å“ç´¢å¼•ï¼ˆå­˜åœ¨åˆ™è¿”å›å¯¹åº”ä¸‹æ ‡ï¼Œä¸å­˜åœ¨è¿”å›-1ï¼‰</returns>
     //private int GetItemIndex(ItemName itemName)
     //    {
-    //        // ±éÀúÎïÆ·ÁĞ±í£¬Æ¥ÅäÎïÆ·Ãû³Æ
+    //        // éå†ç‰©å“åˆ—è¡¨ï¼ŒåŒ¹é…ç‰©å“åç§°
     //        for (int i = 0; i < itemList.Count; i++)
     //        {
     //            if (itemList[i] == itemName)
     //                return i;
     //        }
-    //        // Î´ÕÒµ½·µ»Ø-1£¨Òì³£±£»¤£©
+    //        // æœªæ‰¾åˆ°è¿”å›-1ï¼ˆå¼‚å¸¸ä¿æŠ¤ï¼‰
     //        return -1;
     //    }
 
     ///// <summary>
-    ///// ÊµÏÖISavable½Ó¿Ú£ºÉú³ÉÎïÆ·À¸´æµµÊı¾İ
-    ///// ´æµµÄÚÈİ£ºµ±Ç°ÎïÆ·À¸µÄËùÓĞÎïÆ·Ãû³ÆÁĞ±í
+    ///// å®ç°ISavableæ¥å£ï¼šç”Ÿæˆç‰©å“æ å­˜æ¡£æ•°æ®
+    ///// å­˜æ¡£å†…å®¹ï¼šå½“å‰ç‰©å“æ çš„æ‰€æœ‰ç‰©å“åç§°åˆ—è¡¨
     ///// </summary>
-    ///// <returns>°üº¬ÎïÆ·ÁĞ±íµÄGameSaveData¶ÔÏó</returns>
+    ///// <returns>åŒ…å«ç‰©å“åˆ—è¡¨çš„GameSaveDataå¯¹è±¡</returns>
     //public GameSaveData GenerateSaveData()
     //{
     //    GameSaveData saveData = new GameSaveData();
 
-    //    // ½«µ±Ç°ÎïÆ·ÁĞ±í¸³Öµ¸ø´æµµÊı¾İ£¬ÊµÏÖÎïÆ·×´Ì¬±£´æ
+    //    // å°†å½“å‰ç‰©å“åˆ—è¡¨èµ‹å€¼ç»™å­˜æ¡£æ•°æ®ï¼Œå®ç°ç‰©å“çŠ¶æ€ä¿å­˜
     //    saveData.itemList = this.itemList;
 
     //    return saveData;
     //}
 
     ///// <summary>
-    ///// ÊµÏÖISavable½Ó¿Ú£º´Ó´æµµÊı¾İ»Ö¸´ÎïÆ·À¸×´Ì¬
-    ///// Âß¼­£º½«´æµµÖĞµÄÎïÆ·ÁĞ±í¸³Öµ¸øµ±Ç°ÎïÆ·ÁĞ±í£¬»Ö¸´Íæ¼ÒµÄÎïÆ·À¸
+    ///// å®ç°ISavableæ¥å£ï¼šä»å­˜æ¡£æ•°æ®æ¢å¤ç‰©å“æ çŠ¶æ€
+    ///// é€»è¾‘ï¼šå°†å­˜æ¡£ä¸­çš„ç‰©å“åˆ—è¡¨èµ‹å€¼ç»™å½“å‰ç‰©å“åˆ—è¡¨ï¼Œæ¢å¤ç©å®¶çš„ç‰©å“æ 
     ///// </summary>
-    ///// <param name="saveData">´æµµÊı¾İ£¨°üº¬ÎïÆ·ÁĞ±í£©</param>
+    ///// <param name="saveData">å­˜æ¡£æ•°æ®ï¼ˆåŒ…å«ç‰©å“åˆ—è¡¨ï¼‰</param>
     //public void RestoreGameData(GameSaveData saveData)
     //{
     //    this.itemList = saveData.itemList;
