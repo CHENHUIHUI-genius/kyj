@@ -9,4 +9,6 @@ public class GameSaveData
     public bool shadowDialogueStarted;
     public int completedCount; // 已完成的拼图数量
     public List<int> placedItemIndices = new List<int>(); // 已放置物品的索引
+    public List<string> boolKeys = new List<string>(); // 布尔数据键
+    public List<bool> boolValues = new List<bool>(); // 布尔数据值
 }
